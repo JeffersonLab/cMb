@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="cMb-1.1" default="all">
+
+    <property environment ="env"/>
+
+    <property file="cMb-1.1.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- The task requires the following libraries from IntelliJ IDEA distribution: -->
+  <!--   javac2.jar; jdom.jar; asm.jar; asm-commons.jar -->
+  <!--<taskdef name="javac2" classname="com.intellij.ant.Javac2"/>-->
+  
+
+    <dirname property="module.cMb-1.1.basedir" file="${ant.file}"/>
+
+    <!-- checks coda environmental variable -->
+    <target name="coda_env.check">
+        <condition property="coda_env_isSet">
+            <isset property="env.CODA"/>
+        </condition>
+    </target>
+
+    <!-- condition in case $CODA is set -->
+    <target name="coda_env.exist" depends="coda_env.check" if="coda_env_isSet">
+        <property name="build_dir"  value="${env.CODA}" />
+        <property name="jar_dir" value="${build_dir}/common/jar"/>
+        <property name="bin_dir" value="${build_dir}/Linux-i686/bin"/>
+        <property name="bin64_dir" value="${build_dir}/Linux-x86_64/bin"/>
+        <property name="bin_source_dir" value="${module.cMb-1.1.basedir}/bin"/>
+        <path id="cMb.module.classpath">
+            <fileset dir="${build_dir}/common/jar" >
+                <include name="*.jar" />
+            </fileset>
+        </path>
+    </target>
+
+    <!-- in case $CODA is not set crete build dir in the distribution dir and install everything there-->
+    <target name="coda_env.not_exist" depends="coda_env.check" unless="coda_env_isSet">
+        <mkdir dir = "./build"/>
+        <property name="build_dir"  value="./build" />
+        <property name="jar_dir" value="${build_dir}/common/jar"/>
+        <property name="bin_dir" value="${build_dir}/Linux-i686/bin"/>
+        <property name="bin64_dir" value="${build_dir}/Linux-x86_64/bin"/>
+        <property name="bin_source_dir" value="${module.cMb-1.1.basedir}/bin"/>
+        <path id="cMb.module.classpath">
+            <fileset dir="${build_dir}/common/jar" >
+                <include name="*.jar" />
+            </fileset>
+        </path>
+    </target>
+
+    <!-- Compiler options -->
+
+    <property name="compiler.debug" value="on"/>
+    <property name="compiler.generate.no.warnings" value="off"/>
+    <property name="compiler.args" value=""/>
+    <property name="compiler.max.memory" value="128m"/>
+    <patternset id="ignored.files">
+        <exclude name="**/CVS/**"/>
+        <exclude name="**/SCCS/**"/>
+        <exclude name="**/RCS/**"/>
+        <exclude name="**/rcs/**"/>
+        <exclude name="**/.DS_Store/**"/>
+        <exclude name="**/.svn/**"/>
+        <exclude name="**/.sbas/**"/>
+        <exclude name="**/.IJI.*/**"/>
+        <exclude name="**/vssver.scc/**"/>
+        <exclude name="**/vssver2.scc/**"/>
+    </patternset>
+    <patternset id="compiler.resources">
+        <include name="**/?*.properties"/>
+        <include name="**/?*.xml"/>
+        <include name="**/?*.gif"/>
+        <include name="**/?*.png"/>
+        <include name="**/?*.jpeg"/>
+        <include name="**/?*.jpg"/>
+        <include name="**/?*.html"/>
+        <include name="**/?*.dtd"/>
+        <include name="**/?*.tld"/>
+    </patternset>
+
+    <!-- JDK definitions -->
+  
+  <property name="jdk.bin.1.6" value="${jdk.home}/bin"/>
+  <path id="jdk.classpath.1.6">
+    <fileset dir="${jdk.home}">
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/rt.jar"/>
+      <include name="jre/lib/ext/sunpkcs11.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.6}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.6"/>
+  
+  <property name="module.jdk.home.cMb-1.1" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.cMb-1.1" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.cMb-1.1" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.cMb-1.1" value="${compiler.args}"/>
+  
+  <property name="cMb-1.1.output.dir" value="${module.cMb-1.1.basedir}/classes"/>
+  <property name="cMb-1.1.testoutput.dir" value="${module.cMb-1.1.basedir}/classes"/>
+
+
+    <!-- Check $CODA directory structure. Create if necessary-->
+
+    <patternset id="excluded.from.module.cMb">
+        <patternset refid="ignored.files"/>
+    </patternset>
+
+    <patternset id="excluded.from.compilation.cMb">
+        <patternset refid="excluded.from.module.cMb"/>
+    </patternset>
+
+    <path id="cMb.module.sourcepath">
+        <dirset dir="${module.cMb-1.1.basedir}/.">
+            <include name="src"/>
+        </dirset>
+    </path>
+
+
+    <target name="compile.module.cMb" depends="compile.module.cMb.production" description="Compile module cMb"/>
+
+    <target name="compile.module.cMb.production" description="Compile module cMb; production classes">
+        <mkdir dir="${cMb-1.1.output.dir}"/>
+
+        <javac includeantruntime = "false"  destdir="${cMb-1.1.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.cMb-1.1}/javac">
+            <compilerarg line="${compiler.args.cMb-1.1}"/>
+            <classpath refid="cMb.module.classpath"/>
+            <src refid="cMb.module.sourcepath"/>
+            <patternset refid="excluded.from.compilation.cMb"/>
+        </javac>
+
+        <copy todir="${cMb-1.1.output.dir}">
+            <fileset dir="${module.cMb-1.1.basedir}/src">
+                <patternset refid="compiler.resources"/>
+                <type type="file"/>
+            </fileset>
+        </copy>
+    </target>
+
+
+    <target name="clean.module.cMb" description="cleanup module">
+        <delete dir="${cMb-1.1.output.dir}"/>
+        <delete dir="${cMb-1.1.testoutput.dir}"/>
+    </target>
+
+    <target name="build.jar" description="build jar file">
+        <jar destfile="cMb-1.1.jar" basedir="./classes"/>
+    </target>
+
+
+    <target name="delete.jar" description="delete distribution jar file">
+        <delete file="cMb-1.0.jar"/>
+        <delete file="cMb-1.1.jar"/>
+        <delete file="${build_dir}/common/jar/cMb-1.0.jar"/>
+        <delete file="${build_dir}/common/jar/cMb-1.1.jar"/>
+    </target>
+
+
+
+    <target name="distclean" depends="clean.module.cMb, delete.jar" description="cleanup all"/>
+
+    <target name="clean" depends="clean.module.cMb, delete.jar" description="cleanup all"/>
+
+
+    <target name="cp" description="Copies jars and executable into ${build_dir} area.">
+        <copy file = "${module.cMb-1.1.basedir}/cMb-1.1.jar" todir="${build_dir}/common/jar" overwrite="true"/>
+
+        <copy file = "${bin_source_dir}/cmb" todir="${bin_dir}"/>
+
+        <copy file = "${bin_source_dir}/cmb" todir="${bin64_dir}"/>
+    </target>
+
+    <target name="change_permissions">
+        <chmod file="${bin_dir}/cmb" perm="a+x"/>
+        <chmod file="${bin64_dir}/cmb" perm="a+x"/>
+    </target>
+
+
+    <target name="jar" depends="coda_env.exist, coda_env.not_exist, clean, compile.module.cMb, build.jar" description="build jar"/>
+
+    <target name="install" depends="jar,  cp, change_permissions" description="build and install"/>
+
+    <target name="all" depends="jar" description="build"/>
+
+</project>
