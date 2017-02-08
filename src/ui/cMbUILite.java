@@ -625,20 +625,17 @@ public class cMbUILite extends JFrame {
             {
                 tabbedPane1.addTab("Selection", selectMsgScrollPane);
 
-
                 //======== dalogMsgScrollPane ========
                 {
                     dalogMsgScrollPane.setViewportView(dalogMsgT);
                 }
                 tabbedPane1.addTab("daLog", dalogMsgScrollPane);
 
-
                 //======== messageSpaceScrollPane ========
                 {
                     messageSpaceScrollPane.setViewportView(messageSpaceT);
                 }
                 tabbedPane1.addTab("Message Space", messageSpaceScrollPane);
-
             }
 
             GroupLayout panel1Layout = new GroupLayout(panel1);
@@ -1039,6 +1036,7 @@ public class cMbUILite extends JFrame {
         @Override
         public void callback(cMsgMessage msg, Object userObject) {
             if(isUpdateActive.get()){
+
                 ArrayList<String> al = new ArrayList<String>();
 
                 // archive data for filtering
@@ -1098,15 +1096,18 @@ public class cMbUILite extends JFrame {
                 selectMsgScrollPane.setViewportView(otherMsgT);
             }
             if(isSelectionUpdate) {
-                if(filterMessage(msg, MessageSeverityFilter, sender, codaClass)){
-                    showOtherMsg(otherTColumnNames, msg);
-                }
-            }
+                if (isUpdateActive.get()) {
+                    if (filterMessage(msg, MessageSeverityFilter, sender, codaClass)) {
+                        showOtherMsg(otherTColumnNames, msg);
+                    }
 
-            // add to the message queue
-            selectMessageQueue.add(msg);
-            if(selectMessageQueue.size()>queSize){
-                selectMessageQueue.poll();
+                }
+
+                // add to the message queue
+                selectMessageQueue.add(msg);
+                if (selectMessageQueue.size() > queSize) {
+                    selectMessageQueue.poll();
+                }
             }
         }
     }
@@ -1119,17 +1120,18 @@ public class cMbUILite extends JFrame {
 
         @Override
         public void callback(cMsgMessage msg, Object userObject) {
-
-            if(isDalogUpdate){
-                if(filterMessage(msg, MessageSeverityFilter, sender, codaClass)){
-                    showDalogMsg(msg);
+            if(isSelectionUpdate) {
+                if (isDalogUpdate) {
+                    if (filterMessage(msg, MessageSeverityFilter, sender, codaClass)) {
+                        showDalogMsg(msg);
+                    }
                 }
-            }
 
-            // add to the message queue
-            dalogMessageQueue.add(msg);
-            if(dalogMessageQueue.size()>dalogMsgQueSize){
-                dalogMessageQueue.poll();
+                // add to the message queue
+                dalogMessageQueue.add(msg);
+                if (dalogMessageQueue.size() > dalogMsgQueSize) {
+                    dalogMessageQueue.poll();
+                }
             }
         }
     }
@@ -1222,10 +1224,8 @@ public class cMbUILite extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if(isUpdateActive.get()){
                 isUpdateActive.set(false);
                 pausebutton.setIcon(new ImageIcon(getClass().getResource("/resources/unselected.png")));
-            }
         }
     }
 
