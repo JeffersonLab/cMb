@@ -1,4 +1,5 @@
-package ui;/*
+package ui;
+/*
  * Created by JFormDesigner on Wed Sep 22 17:08:20 EDT 2010
  */
 
