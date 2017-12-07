@@ -1123,8 +1123,10 @@ public class cMbUILite extends JFrame {
         public void callback(cMsgMessage msg, Object userObject) {
             if(isSelectionUpdate) {
                 if (isDalogUpdate) {
-                    if (filterMessage(msg, MessageSeverityFilter, sender, codaClass)) {
-                        showDalogMsg(msg);
+                    if (isUpdateActive.get()) {
+                        if (filterMessage(msg, MessageSeverityFilter, sender, codaClass)) {
+                            showDalogMsg(msg);
+                        }
                     }
                 }
 
