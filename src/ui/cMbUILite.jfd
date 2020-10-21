@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<java version="1.7.0_60" class="java.beans.XMLDecoder">
+<java version="1.8.0_202-release" class="java.beans.XMLDecoder">
  <object class="com.jformdesigner.model.FormModel">
   <void property="contentType">
    <string>form/swing</string>
@@ -27,11 +27,11 @@
          <class>org.jdesktop.layout.GroupLayout</class>
          <void method="setProperty">
           <string>$horizontalGroup</string>
-          <string>par l {comp toolBar3::l::790:x, seq {space :p::p, par l {seq {comp label1:::p::p, space :p::p, comp currentSubjectTextField::::324:x, space :p:48:p, comp label2:::p::p, space :p::p, comp currentTypeTextField::::329:x}, comp tabbedPane1::::778:x}, space :p::p}}</string>
+          <string>par l {comp toolBar3::l::800:x, seq {space :p::p, par l {seq {comp label1:::p::p, space :p::p, comp currentSubjectTextField::::329:x, space :p:48:p, comp label2:::p::p, space :p::p, comp currentTypeTextField::::334:x}, comp tabbedPane1::::788:x}, space :p::p}}</string>
          </void>
          <void method="setProperty">
           <string>$verticalGroup</string>
-          <string>par l {seq l {comp toolBar3:::p::p, space :::p, par b {comp label1::b:p::p, comp currentTypeTextField::b:p::p, comp label2::b:p::p, comp currentSubjectTextField::b:p::p}, space :::p, comp tabbedPane1::::531:x, space :::p}}</string>
+          <string>par l {seq l {comp toolBar3:::p::p, space :::p, par b {comp label1::b:p::p, comp currentTypeTextField::b:p::p, comp label2::b:p::p, comp currentSubjectTextField::b:p::p}, space :::p, comp tabbedPane1::::520:x, space :::p}}</string>
          </void>
         </object>
         <void method="setProperty">
@@ -331,7 +331,7 @@
            </object>
           </void>
           <void method="add">
-           <object class="com.jformdesigner.model.FormContainer">
+           <object class="com.jformdesigner.model.FormContainer" id="FormContainer0">
             <string>javax.swing.JScrollPane</string>
             <object class="com.jformdesigner.model.FormLayoutManager">
              <class>javax.swing.JScrollPane</class>
@@ -355,7 +355,7 @@
            </object>
           </void>
           <void method="add">
-           <object class="com.jformdesigner.model.FormContainer">
+           <object class="com.jformdesigner.model.FormContainer" id="FormContainer1">
             <string>javax.swing.JScrollPane</string>
             <object class="com.jformdesigner.model.FormLayoutManager">
              <class>javax.swing.JScrollPane</class>
@@ -1083,6 +1083,10 @@
               <string>action12</string>
              </object>
             </void>
+            <void method="setProperty">
+             <string>text</string>
+             <string>Enable dynamic subscription</string>
+            </void>
             <void property="name">
              <string>menuItem1</string>
             </void>
@@ -1104,6 +1108,10 @@
              <object class="com.jformdesigner.model.FormReference">
               <string>action7</string>
              </object>
+            </void>
+            <void method="setProperty">
+             <string>text</string>
+             <string>Disable dynamic subscription</string>
             </void>
             <void property="name">
              <string>menuItem2</string>
@@ -1164,7 +1172,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual0">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1192,7 +1200,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual1">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1220,7 +1228,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual2">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1248,7 +1256,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual3">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1276,7 +1284,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual4">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1304,7 +1312,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual5">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1332,7 +1340,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual6">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1360,7 +1368,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual7">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1388,7 +1396,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual8">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1416,7 +1424,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual9">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1444,7 +1452,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual10">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1472,7 +1480,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual11">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1500,7 +1508,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual12">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1528,7 +1536,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual13">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1556,7 +1564,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual14">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1584,7 +1592,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual15">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1612,7 +1620,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual16">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1640,7 +1648,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual17">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1668,7 +1676,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual18">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1696,7 +1704,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual19">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1724,7 +1732,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual20">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1760,7 +1768,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual21">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1796,7 +1804,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual22">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>
@@ -1832,7 +1840,7 @@
      </object>
     </void>
     <void method="add">
-     <object class="com.jformdesigner.model.FormNonVisual">
+     <object class="com.jformdesigner.model.FormNonVisual" id="FormNonVisual23">
       <string>javax.swing.AbstractAction</string>
       <void method="setProperty">
        <string>$action.Name</string>

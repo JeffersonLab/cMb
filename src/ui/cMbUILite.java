@@ -5,6 +5,8 @@ package ui;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,12 +25,12 @@ import util.PlatformConnectDialog;
  */
 public class cMbUILite extends JFrame {
     private String myName;
-    private cMbUILite  me;
+    private cMbUILite me;
 
-    private String  plUdl  = "undefined";
-    private String  plName = "undefined";
-    private String  plHost = "unspecified";
-    private int     plPort = cMsgNetworkConstants.nameServerTcpPort;
+    private String plUdl = "undefined";
+    private String plName = "undefined";
+    private String plHost = "undefined";
+    private int plPort = cMsgNetworkConstants.nameServerTcpPort;
     private cMsg myPlatformConnection;
 
     private cMsgSubscriptionHandle allMsgSubscription;
@@ -36,32 +38,35 @@ public class cMbUILite extends JFrame {
     private cMsgSubscriptionHandle dalogMsgSubscription;
 
     private cMbTableFactory messageSpaceTF = new cMbTableFactory();
-    private cMbTableFactory otherMsgTF     = new cMbTableFactory();
-    private cMbTableFactory dalogMsgTF     = new cMbTableFactory();
+    private cMbTableFactory otherMsgTF = new cMbTableFactory();
+    private cMbTableFactory dalogMsgTF = new cMbTableFactory();
 
     private JTable messageSpaceT;
     private JTable otherMsgT;
     private JTable dalogMsgT;
 
     private boolean createOT = false;
-    private ArrayList<String> otherTColumnNames = new ArrayList<String>();
+    private ArrayList<String> otherTColumnNames = new ArrayList<>();
 
     private AtomicBoolean isUpdateActive = new AtomicBoolean();
 
 
-    /** fifo of the messages*/
-    ConcurrentLinkedQueue<cMsgMessage> selectMessageQueue = new ConcurrentLinkedQueue<cMsgMessage>();
-    ConcurrentLinkedQueue<cMsgMessage> dalogMessageQueue = new ConcurrentLinkedQueue<cMsgMessage>();
+    /**
+     * fifo of the messages
+     */
+    private ConcurrentLinkedQueue<cMsgMessage> selectMessageQueue = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<cMsgMessage> dalogMessageQueue = new ConcurrentLinkedQueue<>();
 
     //  message queue size
     private int queSize = 1000;
     private int dalogMsgQueSize = 1000;
 
-    private volatile String currentSubject         = "undefined";
-    private volatile String currentType            = "undefined";
+    private volatile String currentSubject = "undefined";
+    private volatile String currentType = "undefined";
+    private String archiveDir = "undefined";
 
     // filtering
-    private java.util.List<String> MessageSeverityFilter = Collections.synchronizedList(new ArrayList<String>());
+    private java.util.List<String> MessageSeverityFilter = Collections.synchronizedList(new ArrayList<>());
     private String sender = null;
     private String codaClass = null;
 
@@ -70,17 +75,18 @@ public class cMbUILite extends JFrame {
     private boolean isSelectionUpdate = true;
     private boolean isDalogUpdate = true;
 
+    DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     public cMbUILite() {
         Random r = new Random();
-        myName = "cMb_"+r.nextInt(1000);
+        myName = "cMb_" + r.nextInt(1000);
         String s = System.getenv("EXPID");
-        if(s!=null){
-            plName =s;
+        if (s != null) {
+            plName = s;
         }
 
         boolean ka = (new File(".cmb")).exists();
-        if(!ka){
+        if (!ka) {
             boolean stat = (new File(".cmb")).mkdirs();
             if (!stat) {
                 System.out.println("Error: Failed to create .cmb dir");
@@ -106,7 +112,7 @@ public class cMbUILite extends JFrame {
 
         updateMessageSeverityAL();
 
-        if(!currentSubject.equals("undefined") && !currentType.equals("undefined")){
+        if (!currentSubject.equals("undefined") && !currentType.equals("undefined")) {
             currentSubjectTextField.setText(currentSubject);
             currentTypeTextField.setText((currentType));
             selectMsgScrollPane.setViewportView(otherMsgT);
@@ -114,36 +120,36 @@ public class cMbUILite extends JFrame {
 
     }
 
-    public void setSelectioEnabled(boolean b){
+    private void setSelectioEnabled(boolean b) {
         _selectionOn = b;
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         String title = null;
         cMbUILite g = new cMbUILite();
-        for(int i=0; i<args.length;i++){
-            if(args[i].equalsIgnoreCase("-title")) title = args[i+1];
-            else if(args[i].equalsIgnoreCase("-host")) g.plHost = args[i+1];
-            else if(args[i].equalsIgnoreCase("-port")) g.plPort = Integer.parseInt(args[i+1]);
-            else if(args[i].equalsIgnoreCase("-subject")) {
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equalsIgnoreCase("-title")) title = args[i + 1];
+            else if (args[i].equalsIgnoreCase("-host")) g.plHost = args[i + 1];
+            else if (args[i].equalsIgnoreCase("-port")) g.plPort = Integer.parseInt(args[i + 1]);
+            else if (args[i].equalsIgnoreCase("-subject")) {
                 String s = "*";
-                if(!args[i+1].equalsIgnoreCase("all")){
-                 s = args[i+1];
+                if (!args[i + 1].equalsIgnoreCase("all")) {
+                    s = args[i + 1];
                 }
                 g.currentSubjectTextField.setText(s);
                 g.currentSubject = s;
-            }
-            else if(args[i].equalsIgnoreCase("-type")) {
-                g.currentTypeTextField.setText(args[i+1]);
-                g.currentType = args[i+1];
-            }
-            else if(args[i].equalsIgnoreCase("-queueSize")) {
-                try{
-                    g.queSize = Integer.parseInt(args[i+1]);
-                }catch(NumberFormatException e){
+            } else if (args[i].equalsIgnoreCase("-type")) {
+                g.currentTypeTextField.setText(args[i + 1]);
+                g.currentType = args[i + 1];
+            } else if (args[i].equalsIgnoreCase("-archive")) {
+                g.archiveDir = args[i + 1];
+            } else if (args[i].equalsIgnoreCase("-queueSize")) {
+                try {
+                    g.queSize = Integer.parseInt(args[i + 1]);
+                } catch (NumberFormatException e) {
                     System.out.println("Error: Queue size must be integer.");
                 }
-            } else if(args[i].equalsIgnoreCase("-h") || args[i].equalsIgnoreCase("-help")){
+            } else if (args[i].equalsIgnoreCase("-h") || args[i].equalsIgnoreCase("-help")) {
                 System.out.println("cmb -<option> <value>\n" +
                         "\n" +
                         "  <option>\n" +
@@ -154,15 +160,16 @@ public class cMbUILite extends JFrame {
                         "  -port              :   platform port.\n" +
                         "  -subject           :   subject of the subscription.\n" +
                         "  -type              :   type of the subscription.\n" +
+                        "  -archive           :   direct path to the archive dir.\n" +
                         "  -queueSize         :   stored message queue size.\n" +
                         "");
                 System.exit(1);
             }
         }
-        if(!g.plHost.equals("undefined")){
+        if (!g.plHost.equals("undefined")) {
             g.plConnect(g.plHost, g.plPort, g.plName);
         }
-        if(title!=null){
+        if (title != null) {
             g.setTitle(title);
         }
         g.setVisible(true);
@@ -180,48 +187,48 @@ public class cMbUILite extends JFrame {
         return plPort;
     }
 
-    public void plConnect(String host, int port, String name){
-        if(host.equals("unspecified") || host.equals("")|| host.equals(" ")){
+    public void plConnect(String host, int port, String name) {
+        if (host.equals("unspecified") || host.equals("") || host.equals(" ")) {
             cMsgMessage m = null;
             try {
-                String udl = "cMsg:rc://multicast/"+plName+"&multicastTO=5&connectTO=5";
+                String udl = "cMsg:rc://multicast/" + plName + "&multicastTO=5&connectTO=5";
                 // connect to the rc domain multicast server and request platform host name
-                cMsg myRcDomainConnection = new cMsg(udl,myName,"");
+                cMsg myRcDomainConnection = new cMsg(udl, myName, "");
                 // Connect to the rc domain multicast
                 // server and request platform host name
-                for(int i=0;i<100; i++){
+                for (int i = 0; i < 100; i++) {
                     m = myRcDomainConnection.monitor(Integer.toString(300));
-                    if(m!=null)break;
+                    if (m != null) break;
                 }
             } catch (cMsgException e) {
                 e.printStackTrace();
             }
-            if(m!=null) {
+            if (m != null) {
                 host = m.getSenderHost();
             }
         }
         // connect to the platform
-        plUdl = "cMsg://"+host+":"+port+"/cMsg/"+name+"?regime=low&cmsgpassword="+plName;
+        plUdl = "cMsg://" + host + ":" + port + "/cMsg/" + name + "?regime=low&cmsgpassword=" + plName;
         try {
-            if(myPlatformConnection!=null && myPlatformConnection.isConnected()){
+            if (myPlatformConnection != null && myPlatformConnection.isConnected()) {
                 myPlatformConnection.disconnect();
                 myPlatformConnection = null;
             }
-            myPlatformConnection = new cMsg(plUdl,myName,"cMsg Browser GUI");
+            myPlatformConnection = new cMsg(plUdl, myName, "cMsg Browser GUI");
             myPlatformConnection.connect();
             myPlatformConnection.start();
         } catch (cMsgException ee) {
             System.out.println("Error: connecting to the platform");
-            JOptionPane.showMessageDialog(me,"Error connecting to the platform");
+            JOptionPane.showMessageDialog(me, "Error connecting to the platform");
         }
         plName = name;
         plHost = host;
         plPort = port;
 
-        if(myPlatformConnection!=null && myPlatformConnection.isConnected()){
+        if (myPlatformConnection != null && myPlatformConnection.isConnected()) {
             try {
 
-                if(allMsgSubscription !=null) myPlatformConnection.unsubscribe(allMsgSubscription);
+                if (allMsgSubscription != null) myPlatformConnection.unsubscribe(allMsgSubscription);
                 allMsgSubscription = myPlatformConnection.subscribe("*",
                         "*",
                         new MessageSpaceCallback(),
@@ -229,13 +236,13 @@ public class cMbUILite extends JFrame {
                 statusbutton.setIcon(new ImageIcon(getClass().getResource("/resources/info-on.png")));
                 isUpdateActive.set(true);
 
-                if(dalogMsgSubscription !=null) myPlatformConnection.unsubscribe(dalogMsgSubscription);
+                if (dalogMsgSubscription != null) myPlatformConnection.unsubscribe(dalogMsgSubscription);
                 dalogMsgSubscription = myPlatformConnection.subscribe("*",
                         "rc/report/dalog",
                         new DalogMessageCallback(),
                         null);
 
-                if(selectedMsgSubscription !=null) myPlatformConnection.unsubscribe(selectedMsgSubscription);
+                if (selectedMsgSubscription != null) myPlatformConnection.unsubscribe(selectedMsgSubscription);
                 selectedMsgSubscription = myPlatformConnection.subscribe(currentSubject.trim(),
                         currentType.trim(),
                         new SelectedMessageCallback(),
@@ -246,9 +253,10 @@ public class cMbUILite extends JFrame {
             }
         }
     }
-    public void plDisconnect(){
+
+    private void plDisconnect() {
         try {
-            if(myPlatformConnection!=null && myPlatformConnection.isConnected()){
+            if (myPlatformConnection != null && myPlatformConnection.isConnected()) {
                 myPlatformConnection.disconnect();
                 myPlatformConnection = null;
                 statusbutton.setIcon(new ImageIcon(getClass().getResource("/resources/error-on.png")));
@@ -260,30 +268,29 @@ public class cMbUILite extends JFrame {
 
     /**
      * Converts byte array into an Object, that can be cast into pre-known class object.
+     *
      * @param bytes byte array
      * @return Object
-     * @throws java.io.IOException case will return null
+     * @throws java.io.IOException    case will return null
      * @throws ClassNotFoundException case will return null
      */
-    private Object B2O(byte bytes[]) throws IOException, ClassNotFoundException{
+    private Object B2O(byte bytes[]) throws IOException, ClassNotFoundException {
 
-        try{
+        try {
             Object object;
             java.io.ObjectInputStream in;
             java.io.ByteArrayInputStream bs;
-            bs = new java.io.ByteArrayInputStream (bytes);
+            bs = new java.io.ByteArrayInputStream(bytes);
             in = new java.io.ObjectInputStream(bs);
             object = in.readObject();
-            in.close ();
-            bs.close ();
+            in.close();
+            bs.close();
             return object;
-        }
-        catch(StreamCorruptedException sce){
+        } catch (StreamCorruptedException sce) {
             System.out.println("Stream corrupted Exception ");
             sce.printStackTrace();
             return new Object();
-        }
-        catch(java.lang.ClassCastException cce){
+        } catch (java.lang.ClassCastException cce) {
             System.out.println("Class Cast Exception ");
             cce.printStackTrace();
             return new Object();
@@ -293,7 +300,6 @@ public class cMbUILite extends JFrame {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        // Generated using JFormDesigner non-commercial license
         menuBar1 = new JMenuBar();
         platformmenu = new JMenu();
         connectmenuItem = new JMenuItem();
@@ -367,7 +373,7 @@ public class cMbUILite extends JFrame {
         action24 = new ResumeDalogUpdate();
 
         //======== this ========
-        Container contentPane = getContentPane();
+        var contentPane = getContentPane();
 
         //======== menuBar1 ========
         {
@@ -452,28 +458,28 @@ public class cMbUILite extends JFrame {
 
                         //---- infoCheckBox ----
                         infoCheckBox.setSelected(true);
-                        infoCheckBox.setFont(new Font("Dialog", Font.BOLD, 12));
+                        infoCheckBox.setFont(new Font(Font.DIALOG, Font.BOLD, 12));
                         infoCheckBox.setAction(action16);
                         severityfiltermenu.add(infoCheckBox);
                         severityfiltermenu.addSeparator();
 
                         //---- warningCheckBox ----
                         warningCheckBox.setSelected(true);
-                        warningCheckBox.setFont(new Font("Dialog", Font.BOLD, 12));
+                        warningCheckBox.setFont(new Font(Font.DIALOG, Font.BOLD, 12));
                         warningCheckBox.setAction(action17);
                         severityfiltermenu.add(warningCheckBox);
                         severityfiltermenu.addSeparator();
 
                         //---- errorCheckBox ----
                         errorCheckBox.setSelected(true);
-                        errorCheckBox.setFont(new Font("Dialog", Font.BOLD, 12));
+                        errorCheckBox.setFont(new Font(Font.DIALOG, Font.BOLD, 12));
                         errorCheckBox.setAction(action18);
                         severityfiltermenu.add(errorCheckBox);
                         severityfiltermenu.addSeparator();
 
                         //---- severeCheckBox ----
                         severeCheckBox.setSelected(true);
-                        severeCheckBox.setFont(new Font("Dialog", Font.BOLD, 12));
+                        severeCheckBox.setFont(new Font(Font.DIALOG, Font.BOLD, 12));
                         severeCheckBox.setAction(action19);
                         severityfiltermenu.add(severeCheckBox);
                     }
@@ -546,11 +552,13 @@ public class cMbUILite extends JFrame {
 
                 //---- menuItem1 ----
                 menuItem1.setAction(action12);
+                menuItem1.setText("Enable dynamic subscription");
                 controlmenu.add(menuItem1);
                 controlmenu.addSeparator();
 
                 //---- menuItem2 ----
                 menuItem2.setAction(action7);
+                menuItem2.setText("Disable dynamic subscription");
                 controlmenu.add(menuItem2);
             }
             menuBar1.add(controlmenu);
@@ -580,7 +588,7 @@ public class cMbUILite extends JFrame {
                 statusbutton.setIcon(new ImageIcon(getClass().getResource("/resources/error-on.png")));
                 statusbutton.setText("status");
                 statusbutton.setForeground(new Color(0, 102, 102));
-                statusbutton.setFont(new Font("Dialog", Font.PLAIN, 11));
+                statusbutton.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
                 toolBar3.add(statusbutton);
 
                 //---- pausebutton ----
@@ -589,7 +597,7 @@ public class cMbUILite extends JFrame {
                 pausebutton.setIcon(new ImageIcon(getClass().getResource("/resources/warning-on.png")));
                 pausebutton.setText("pause");
                 pausebutton.setForeground(new Color(0, 102, 102));
-                pausebutton.setFont(new Font("Dialog", Font.PLAIN, 11));
+                pausebutton.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
                 toolBar3.add(pausebutton);
 
                 //---- resumebutton ----
@@ -598,28 +606,28 @@ public class cMbUILite extends JFrame {
                 resumebutton.setIcon(new ImageIcon(getClass().getResource("/resources/Play-Normal-16x16.png")));
                 resumebutton.setText("resume");
                 resumebutton.setForeground(new Color(0, 102, 102));
-                resumebutton.setFont(new Font("Dialog", Font.PLAIN, 11));
+                resumebutton.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
                 toolBar3.add(resumebutton);
             }
 
             //---- label1 ----
             label1.setText("Subject");
             label1.setForeground(new Color(0, 102, 102));
-            label1.setFont(new Font("Dialog", Font.PLAIN, 11));
+            label1.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 
             //---- currentSubjectTextField ----
-            currentSubjectTextField.setFont(new Font("Dialog", Font.PLAIN, 11));
+            currentSubjectTextField.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
             currentSubjectTextField.setForeground(new Color(153, 51, 0));
             currentSubjectTextField.setEditable(false);
 
             //---- label2 ----
             label2.setText("Type");
             label2.setForeground(new Color(0, 102, 102));
-            label2.setFont(new Font("Dialog", Font.PLAIN, 11));
+            label2.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 
             //---- currentTypeTextField ----
             currentTypeTextField.setEditable(false);
-            currentTypeTextField.setFont(new Font("Dialog", Font.PLAIN, 11));
+            currentTypeTextField.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
             currentTypeTextField.setForeground(new Color(153, 51, 0));
 
             //======== tabbedPane1 ========
@@ -642,52 +650,52 @@ public class cMbUILite extends JFrame {
             GroupLayout panel1Layout = new GroupLayout(panel1);
             panel1.setLayout(panel1Layout);
             panel1Layout.setHorizontalGroup(
-                panel1Layout.createParallelGroup()
-                    .addComponent(toolBar3, GroupLayout.DEFAULT_SIZE, 790, Short.MAX_VALUE)
-                    .addGroup(panel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(panel1Layout.createParallelGroup()
+                    panel1Layout.createParallelGroup()
+                            .addComponent(toolBar3, GroupLayout.DEFAULT_SIZE, 800, Short.MAX_VALUE)
                             .addGroup(panel1Layout.createSequentialGroup()
-                                .addComponent(label1)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(currentSubjectTextField, GroupLayout.DEFAULT_SIZE, 324, Short.MAX_VALUE)
-                                .addGap(48, 48, 48)
-                                .addComponent(label2)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(currentTypeTextField, GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
-                            .addComponent(tabbedPane1, GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE))
-                        .addContainerGap())
+                                    .addContainerGap()
+                                    .addGroup(panel1Layout.createParallelGroup()
+                                            .addGroup(panel1Layout.createSequentialGroup()
+                                                    .addComponent(label1)
+                                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                    .addComponent(currentSubjectTextField, GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
+                                                    .addGap(48, 48, 48)
+                                                    .addComponent(label2)
+                                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                    .addComponent(currentTypeTextField, GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
+                                            .addComponent(tabbedPane1, GroupLayout.DEFAULT_SIZE, 788, Short.MAX_VALUE))
+                                    .addContainerGap())
             );
             panel1Layout.setVerticalGroup(
-                panel1Layout.createParallelGroup()
-                    .addGroup(panel1Layout.createSequentialGroup()
-                        .addComponent(toolBar3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(panel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                            .addComponent(label1)
-                            .addComponent(currentTypeTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(label2)
-                            .addComponent(currentSubjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tabbedPane1, GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
-                        .addContainerGap())
+                    panel1Layout.createParallelGroup()
+                            .addGroup(panel1Layout.createSequentialGroup()
+                                    .addComponent(toolBar3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                    .addGroup(panel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                            .addComponent(label1)
+                                            .addComponent(currentTypeTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(label2)
+                                            .addComponent(currentSubjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(tabbedPane1, GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                                    .addContainerGap())
             );
         }
 
         GroupLayout contentPaneLayout = new GroupLayout(contentPane);
         contentPane.setLayout(contentPaneLayout);
         contentPaneLayout.setHorizontalGroup(
-            contentPaneLayout.createParallelGroup()
-                .addGroup(contentPaneLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(panel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addContainerGap())
+                contentPaneLayout.createParallelGroup()
+                        .addGroup(contentPaneLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(panel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())
         );
         contentPaneLayout.setVerticalGroup(
-            contentPaneLayout.createParallelGroup()
-                .addGroup(contentPaneLayout.createSequentialGroup()
-                    .addComponent(panel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addContainerGap())
+                contentPaneLayout.createParallelGroup()
+                        .addGroup(contentPaneLayout.createSequentialGroup()
+                                .addComponent(panel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())
         );
         pack();
         setLocationRelativeTo(getOwner());
@@ -698,32 +706,28 @@ public class cMbUILite extends JFrame {
      * Based on the UI severity checkbox status updates MessageSeverityFilter array list,
      * to be used for filtering incoming dalog messages or entire message queue.
      */
-    private void updateMessageSeverityAL(){
-        if(infoCheckBox.isSelected() && !MessageSeverityFilter.contains("INFO")){
+    private void updateMessageSeverityAL() {
+        if (infoCheckBox.isSelected() && !MessageSeverityFilter.contains("INFO")) {
             MessageSeverityFilter.add("INFO");
-        }
-        else if (!infoCheckBox.isSelected() && MessageSeverityFilter.contains("INFO")) {
+        } else if (!infoCheckBox.isSelected() && MessageSeverityFilter.contains("INFO")) {
             MessageSeverityFilter.remove("INFO");
         }
 
-        if(warningCheckBox.isSelected() && !MessageSeverityFilter.contains("WARN")){
+        if (warningCheckBox.isSelected() && !MessageSeverityFilter.contains("WARN")) {
             MessageSeverityFilter.add("WARN");
-        }
-        else if (!warningCheckBox.isSelected() && MessageSeverityFilter.contains("WARN")) {
+        } else if (!warningCheckBox.isSelected() && MessageSeverityFilter.contains("WARN")) {
             MessageSeverityFilter.remove("WARN");
         }
 
-        if(errorCheckBox.isSelected() && !MessageSeverityFilter.contains("ERROR")){
+        if (errorCheckBox.isSelected() && !MessageSeverityFilter.contains("ERROR")) {
             MessageSeverityFilter.add("ERROR");
-        }
-        else if (!errorCheckBox.isSelected() && MessageSeverityFilter.contains("ERROR")) {
+        } else if (!errorCheckBox.isSelected() && MessageSeverityFilter.contains("ERROR")) {
             MessageSeverityFilter.remove("ERROR");
         }
 
-        if(severeCheckBox.isSelected() && !MessageSeverityFilter.contains("SEVERE")){
+        if (severeCheckBox.isSelected() && !MessageSeverityFilter.contains("SEVERE")) {
             MessageSeverityFilter.add("SEVERE");
-        }
-        else if (!severeCheckBox.isSelected() && MessageSeverityFilter.contains("SEVERE")) {
+        } else if (!severeCheckBox.isSelected() && MessageSeverityFilter.contains("SEVERE")) {
             MessageSeverityFilter.remove("SEVERE");
         }
 
@@ -732,40 +736,41 @@ public class cMbUILite extends JFrame {
 
     /**
      * Filters message based on message severity
-     * @param msg message
+     *
+     * @param msg     message
      * @param sevList list of requested severity
      * @return true if passes the filter
      */
     private boolean filterMessage(cMsgMessage msg,
                                   java.util.List<String> sevList,
                                   String _sender,
-                                  String _codaClass){
+                                  String _codaClass) {
         boolean b = false;
-        if(sevList.isEmpty())return true;
+        if (sevList.isEmpty()) return true;
         try {
 
             // sender
             String sender = "undefined";
-            if(_sender!=null) {
+            if (_sender != null) {
                 sender = msg.getSender();
             }
 
             // codaclass
             String codaClass = "undefined";
-            if(_codaClass!=null){
-                if(msg.getPayloadItem("codaClass") !=null) codaClass = msg.getPayloadItem("codaClass").getString();
+            if (_codaClass != null) {
+                if (msg.getPayloadItem("codaClass") != null) codaClass = msg.getPayloadItem("codaClass").getString();
             }
 
             String severity = "undefined";
-            if(msg.getPayloadItem("severity") !=null) severity = msg.getPayloadItem("severity").getString();
+            if (msg.getPayloadItem("severity") != null) severity = msg.getPayloadItem("severity").getString();
 
-            if(severity.equals("undefined") && sender.equals("undefined") && codaClass.equals("undefined")){
+            if (severity.equals("undefined") && sender.equals("undefined") && codaClass.equals("undefined")) {
                 b = true;
             } else {
-                if((severity.equals("undefined") || sevList.contains(severity)) &&
+                if ((severity.equals("undefined") || sevList.contains(severity)) &&
                         (sender.equals("undefined") || sender.equals(_sender)) &&
-                        (codaClass.equals("undefined") ||  codaClass.equals(_codaClass))
-                        ){
+                        (codaClass.equals("undefined") || codaClass.equals(_codaClass))
+                ) {
                     b = true;
                 }
             }
@@ -776,39 +781,83 @@ public class cMbUILite extends JFrame {
     }
 
     /**
+     * Filters message based on message severity
+     *
+     * @param msg     message
+     * @param sevList list of requested severity
+     * @return true if passes the filter
+     */
+    private void archive(cMsgMessage msg,
+                         java.util.List<String> sevList,
+                         String _sender) {
+        if (sevList.isEmpty()) return;
+        try {
+
+            // sender
+            String sender = "undefined";
+            if (_sender != null) {
+                sender = msg.getSender();
+            }
+
+            // codaclass
+            String codaClass = "undefined";
+            if (msg.getPayloadItem("codaClass") != null) codaClass = msg.getPayloadItem("codaClass").getString();
+
+            // severity
+            String severity = "undefined";
+            if (msg.getPayloadItem("severity") != null) severity = msg.getPayloadItem("severity").getString();
+
+
+            if (sevList.contains(severity) && sender.equals(_sender) && !archiveDir.equals("undefined")) {
+                String dirName = archiveDir + File.separator + codaClass;
+                // create a dir = codaClass if it does not exists
+                File dir = new File(dirName);
+                if (!dir.exists()) dir.mkdirs();
+                BufferedWriter writer = new BufferedWriter(new FileWriter(dirName+File.separator+sender, true));
+                writer.write(LocalDateTime.now().format(dateFormat));
+                writer.write(msg.toString(false,true,true));
+                writer.close();
+            }
+        } catch (cMsgException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * based on the integer returns string describing the severity level
      * on the dalog message
+     *
      * @param si dalog message severity level
      * @return String representation of the severity
      */
-    private String severityToString(int si){
-        String s= "RESERVE";
-        if(si>=1 && si<=4) {
+    private String severityToString(int si) {
+        String s = "RESERVE";
+        if (si >= 1 && si <= 4) {
             s = "INFO";
-        } else if (si>=5 && si<=8) {
+        } else if (si >= 5 && si <= 8) {
             s = "WARNING";
-        } else if (si>=9 && si<=12) {
+        } else if (si >= 9 && si <= 12) {
             s = "ERROR";
-        } else if (si>=13 && si<=14) {
+        } else if (si >= 13 && si <= 14) {
             s = "SEVERE";
         }
         return s;
     }
 
 
-    private void filterMessageQueue(){
+    private void filterMessageQueue() {
         otherMsgTF.clearTable();
         dalogMsgTF.clearTable();
         // filter select messages
-        for(cMsgMessage msg: selectMessageQueue){
-            if(filterMessage(msg, MessageSeverityFilter, sender, codaClass)){
-                showOtherMsg(otherTColumnNames,msg);
+        for (cMsgMessage msg : selectMessageQueue) {
+            if (filterMessage(msg, MessageSeverityFilter, sender, codaClass)) {
+                showOtherMsg(otherTColumnNames, msg);
             }
         }
 
         // filter dalog messages
-        for(cMsgMessage msg: dalogMessageQueue){
-            if(filterMessage(msg, MessageSeverityFilter, sender, codaClass)){
+        for (cMsgMessage msg : dalogMessageQueue) {
+            if (filterMessage(msg, MessageSeverityFilter, sender, codaClass)) {
                 showDalogMsg(msg);
             }
         }
@@ -817,32 +866,32 @@ public class cMbUILite extends JFrame {
 //        codaClass = null;
     }
 
-    private void showOtherMsg(ArrayList<String> titles,cMsgMessage msg){
+    private void showOtherMsg(ArrayList<String> titles, cMsgMessage msg) {
         ArrayList<String> al = new ArrayList<String>();
-        if(titles.contains("Sender")){
+        if (titles.contains("Sender")) {
             al.add(msg.getSender());
         }
 
-        if(titles.contains("Text")){
-            if(msg.getText()!=null){
+        if (titles.contains("Text")) {
+            if (msg.getText() != null) {
                 al.add(msg.getText());
             } else {
                 al.add("NA");
             }
         }
-        if(titles.contains("ByteArray")){
-            if(msg.getByteArray()!=null){
-                al.add("ByteArray l="+msg.getByteArray().length);
+        if (titles.contains("ByteArray")) {
+            if (msg.getByteArray() != null) {
+                al.add("ByteArray l=" + msg.getByteArray().length);
             } else {
                 al.add("NA");
             }
         }
-        for(cMsgPayloadItem pi:msg.getPayloadItems().values()){
-            if(!pi.getName().contains("cMsg")){
-                if(titles.contains(pi.getName())){
-                    if(msg.getPayloadItem(pi.getName())!=null ){
+        for (cMsgPayloadItem pi : msg.getPayloadItems().values()) {
+            if (!pi.getName().contains("cMsg")) {
+                if (titles.contains(pi.getName())) {
+                    if (msg.getPayloadItem(pi.getName()) != null) {
                         try {
-                            switch(pi.getType()){
+                            switch (pi.getType()) {
                                 case cMsgConstants.payloadInt8:
                                 case cMsgConstants.payloadInt16:
                                 case cMsgConstants.payloadInt32:
@@ -862,22 +911,22 @@ public class cMbUILite extends JFrame {
                                 case cMsgConstants.payloadInt16A:
                                 case cMsgConstants.payloadInt32A:
                                 case cMsgConstants.payloadInt64A:
-                                    al.add("IntArray l="+msg.getPayloadItem(pi.getName()).getIntArray().length);
+                                    al.add("IntArray l=" + msg.getPayloadItem(pi.getName()).getIntArray().length);
                                     break;
                                 case cMsgConstants.payloadFltA:
-                                    al.add("FloatArray l="+msg.getPayloadItem(pi.getName()).getFloatArray().length);
+                                    al.add("FloatArray l=" + msg.getPayloadItem(pi.getName()).getFloatArray().length);
                                     break;
                                 case cMsgConstants.payloadDblA:
-                                    al.add("DoubleArray l="+msg.getPayloadItem(pi.getName()).getDoubleArray().length);
+                                    al.add("DoubleArray l=" + msg.getPayloadItem(pi.getName()).getDoubleArray().length);
                                     break;
                                 case cMsgConstants.payloadStrA:
-                                    al.add("StringArray l="+msg.getPayloadItem(pi.getName()).getStringArray().length);
+                                    al.add("StringArray l=" + msg.getPayloadItem(pi.getName()).getStringArray().length);
                                     break;
                                 case cMsgConstants.payloadBin:
                                     al.add("BinaryData");
                                     break;
                                 case cMsgConstants.payloadBinA:
-                                    al.add("BinaryArray l="+msg.getPayloadItem(pi.getName()).getBinaryArray().length);
+                                    al.add("BinaryArray l=" + msg.getPayloadItem(pi.getName()).getBinaryArray().length);
                                     break;
                             }
                         } catch (cMsgException e) {
@@ -889,34 +938,34 @@ public class cMbUILite extends JFrame {
                 }
             }
         }
-        if(!al.isEmpty()){
+        if (!al.isEmpty()) {
             otherMsgTF.addData(al.toArray(new String[al.size()]));
         }
     }
 
-    private void showDalogMsg(cMsgMessage msg){
+    private void showDalogMsg(cMsgMessage msg) {
         String[] data = new String[8];
         try {
             data[0] = msg.getSender();
-            if(msg.getPayloadItem("codaClass") !=null ) data[1] = msg.getPayloadItem("codaClass").getString();
+            if (msg.getPayloadItem("codaClass") != null) data[1] = msg.getPayloadItem("codaClass").getString();
             else data[1] = "undefined";
 
-            if(msg.getPayloadItem("session") !=null ) data[2] = msg.getPayloadItem("session").getString();
+            if (msg.getPayloadItem("session") != null) data[2] = msg.getPayloadItem("session").getString();
             else data[2] = "undefined";
 
-            if(msg.getPayloadItem("config") !=null ) data[3] = msg.getPayloadItem("config").getString();
+            if (msg.getPayloadItem("config") != null) data[3] = msg.getPayloadItem("config").getString();
             else data[3] = "undefined";
 
-            if(msg.getPayloadItem("state") !=null ) data[4] = msg.getPayloadItem("state").getString();
+            if (msg.getPayloadItem("state") != null) data[4] = msg.getPayloadItem("state").getString();
             else data[4] = "undefined";
 
-            if(msg.getPayloadItem("dalogText") !=null ) data[5] = msg.getPayloadItem("dalogText").getString();
+            if (msg.getPayloadItem("dalogText") != null) data[5] = msg.getPayloadItem("dalogText").getString();
             else data[5] = "undefined";
 
-            if(msg.getPayloadItem("severity") !=null ) data[6] = msg.getPayloadItem("severity").getString();
+            if (msg.getPayloadItem("severity") != null) data[6] = msg.getPayloadItem("severity").getString();
             else data[6] = "undefined";
 
-            if(msg.getPayloadItem("tod") !=null ) data[7] = msg.getPayloadItem("tod").getString();
+            if (msg.getPayloadItem("tod") != null) data[7] = msg.getPayloadItem("tod").getString();
             else data[7] = "undefined";
 
         } catch (cMsgException e) {
@@ -928,34 +977,34 @@ public class cMbUILite extends JFrame {
 
     /**
      * Creates other than daLogMsg message table
-     * @param msg  cMsgMessage
+     *
+     * @param msg cMsgMessage
      * @return al ArrayList of payloadItem names.
      */
-    private ArrayList<String> createOtherTable(cMsgMessage msg){
+    private ArrayList<String> createOtherTable(cMsgMessage msg) {
         ArrayList<String> al = new ArrayList<String>();
         al.add("Sender");
-        if(msg.getText()!=null){
+        if (msg.getText() != null) {
             al.add("Text");
         }
-        if(msg.getByteArray()!=null){
+        if (msg.getByteArray() != null) {
             al.add("ByteArray");
         }
-        for(cMsgPayloadItem pi:msg.getPayloadItems().values()){
-            if(!pi.getName().contains("cMsg")){
+        for (cMsgPayloadItem pi : msg.getPayloadItems().values()) {
+            if (!pi.getName().contains("cMsg")) {
                 al.add(pi.getName());
             }
         }
         otherMsgTF.clearTable();
-        if(msg.getType().equals("rc/report/dalg")){
+        if (msg.getType().equals("rc/report/dalg")) {
             otherMsgT = otherMsgTF.createDalogTable();
         } else {
-            otherMsgT =  otherMsgTF.createOtherMsgTable(al);
+            otherMsgT = otherMsgTF.createOtherMsgTable(al);
         }
         return al;
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner non-commercial license
     private JMenuBar menuBar1;
     private JMenu platformmenu;
     private JMenuItem connectmenuItem;
@@ -1036,44 +1085,36 @@ public class cMbUILite extends JFrame {
 
         @Override
         public void callback(cMsgMessage msg, Object userObject) {
-            if(isUpdateActive.get()){
+            if (isUpdateActive.get()) {
 
-                ArrayList<String> al = new ArrayList<String>();
-
-                // archive data for filtering
-                if(msg.getType()!=null &&
-                        msg.getSubject()!=null &&
-                        !currentSubject.equals("undefined") &&
-                        !currentType.equals("undefined")) {
-
-                }
+                ArrayList<String> al = new ArrayList<>();
 
                 al.add(msg.getSubject());
                 al.add(msg.getType());
                 al.add(msg.getSender());
-                if(msg.getText()!=null){
+                if (msg.getText() != null) {
                     al.add(msg.getText());
                 } else {
                     al.add("NA");
                 }
-                if(msg.getByteArray()!=null){
-                    al.add("Length = "+Integer.toString(msg.getByteArrayLength()));
+                if (msg.getByteArray() != null) {
+                    al.add("Length = " + Integer.toString(msg.getByteArrayLength()));
                 } else {
                     al.add("NA");
                 }
                 int j = 0;
-                for(String s: msg.getPayloadNames()){
-                    if(!s.contains("cMsg")){
+                for (String s : msg.getPayloadNames()) {
+                    if (!s.contains("cMsg")) {
                         j++;
                     }
                 }
-                if(j>0){
-                    al.add("Count = "+Integer.toString(j));
+                if (j > 0) {
+                    al.add("Count = " + Integer.toString(j));
                 } else {
                     al.add("NA");
                 }
 
-                if(!al.isEmpty()){
+                if (!al.isEmpty()) {
                     // show in the message space table
                     messageSpaceTF.updateMessageSpaceTable(al.toArray(new String[al.size()]));
                 }
@@ -1089,14 +1130,14 @@ public class cMbUILite extends JFrame {
         @Override
         public void callback(cMsgMessage msg, Object userObject) {
             // create and deploy other msgTable and show other messages
-            if(createOT || otherTColumnNames.isEmpty()){
+            if (createOT || otherTColumnNames.isEmpty()) {
                 createOT = false;
                 isSelectionUpdate = true;
                 otherTColumnNames = createOtherTable(msg);
                 // deploy other Msg table
                 selectMsgScrollPane.setViewportView(otherMsgT);
             }
-            if(isSelectionUpdate) {
+            if (isSelectionUpdate) {
                 if (isUpdateActive.get()) {
                     if (filterMessage(msg, MessageSeverityFilter, sender, codaClass)) {
                         showOtherMsg(otherTColumnNames, msg);
@@ -1121,7 +1162,7 @@ public class cMbUILite extends JFrame {
 
         @Override
         public void callback(cMsgMessage msg, Object userObject) {
-            if(isSelectionUpdate) {
+            if (isSelectionUpdate) {
                 if (isDalogUpdate) {
                     if (isUpdateActive.get()) {
                         if (filterMessage(msg, MessageSeverityFilter, sender, codaClass)) {
@@ -1135,6 +1176,10 @@ public class cMbUILite extends JFrame {
                 if (dalogMessageQueue.size() > dalogMsgQueSize) {
                     dalogMessageQueue.poll();
                 }
+
+                // archive filtered data
+                archive(msg, MessageSeverityFilter, sender);
+
             }
         }
     }
@@ -1143,7 +1188,6 @@ public class cMbUILite extends JFrame {
     private class ConnectAction extends AbstractAction {
         private ConnectAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Connect");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -1156,18 +1200,17 @@ public class cMbUILite extends JFrame {
     private class DisconnectAction extends AbstractAction {
         private DisconnectAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Disconnect");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
         public void actionPerformed(ActionEvent e) {
-            if(myPlatformConnection!=null && myPlatformConnection.isConnected()){
-                if((JOptionPane.showConfirmDialog(me,"Are you sure ?","Confirmation",
-                        JOptionPane.OK_CANCEL_OPTION)==JOptionPane.YES_OPTION)){
+            if (myPlatformConnection != null && myPlatformConnection.isConnected()) {
+                if ((JOptionPane.showConfirmDialog(me, "Are you sure ?", "Confirmation",
+                        JOptionPane.OK_CANCEL_OPTION) == JOptionPane.YES_OPTION)) {
                     plDisconnect();
                     currentSubject = "undefined";
-                    currentType    = "undefined";
+                    currentType = "undefined";
                 }
             }
         }
@@ -1176,7 +1219,6 @@ public class cMbUILite extends JFrame {
     private class ExitAction extends AbstractAction {
         private ExitAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Exit");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -1191,26 +1233,25 @@ public class cMbUILite extends JFrame {
     private class StatusAction extends AbstractAction {
         private StatusAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "status");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
         public void actionPerformed(ActionEvent e) {
-            if(myPlatformConnection!=null && myPlatformConnection.isConnected()){
+            if (myPlatformConnection != null && myPlatformConnection.isConnected()) {
 
                 String cs = "undefined";
                 String ma = "undefined";
-                if(codaClass!=null) cs = codaClass;
-                if(sender!=null) ma = sender;
-                JOptionPane.showMessageDialog(me,"Connected to: \n"+plUdl+
+                if (codaClass != null) cs = codaClass;
+                if (sender != null) ma = sender;
+                JOptionPane.showMessageDialog(me, "Connected to: \n" + plUdl +
                         "\n\nShowing messages: " +
-                        "\nUser selected subject = "+currentSubject+
-                        "\nUser selected type     = "+currentType+
-                        "\nUpdating                   = "+isUpdateActive.get()+
-                        "\n\nSelect: \n"+ MessageSeverityFilter +
-                        "\nCoda type                 = "+ cs +
-                        "\nMessage author        = "+ ma
+                        "\nUser selected subject = " + currentSubject +
+                        "\nUser selected type     = " + currentType +
+                        "\nUpdating                   = " + isUpdateActive.get() +
+                        "\n\nSelect: \n" + MessageSeverityFilter +
+                        "\nCoda type                 = " + cs +
+                        "\nMessage author        = " + ma
                 );
             } else {
                 JOptionPane.showMessageDialog(me, "Disconnected.", "Status", JOptionPane.INFORMATION_MESSAGE);
@@ -1221,27 +1262,25 @@ public class cMbUILite extends JFrame {
     private class PauseAction extends AbstractAction {
         private PauseAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "pause");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
         public void actionPerformed(ActionEvent e) {
-                isUpdateActive.set(false);
-                pausebutton.setIcon(new ImageIcon(getClass().getResource("/resources/unselected.png")));
+            isUpdateActive.set(false);
+            pausebutton.setIcon(new ImageIcon(getClass().getResource("/resources/unselected.png")));
         }
     }
 
     private class ResumeAction extends AbstractAction {
         private ResumeAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "resume");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
         public void actionPerformed(ActionEvent e) {
-            if(myPlatformConnection!=null && myPlatformConnection.isConnected()){
+            if (myPlatformConnection != null && myPlatformConnection.isConnected()) {
                 isUpdateActive.set(true);
                 pausebutton.setIcon(new ImageIcon(getClass().getResource("/resources/warning-on.png")));
             }
@@ -1261,27 +1300,27 @@ public class cMbUILite extends JFrame {
         }
 
         public void valueChanged(ListSelectionEvent e) {
-            if(_selectionOn) {
+            if (_selectionOn) {
                 String subject;
                 String type;
                 int rowIndex = table.getSelectedRow();
                 int colIndex = table.getSelectedColumn();
-                if(rowIndex>=0 && colIndex>=0){
-                    subject =(String)table.getValueAt(rowIndex,0);
-                    type    =(String)table.getValueAt(rowIndex,1);
-                    if(colIndex==0) {
+                if (rowIndex >= 0 && colIndex >= 0) {
+                    subject = (String) table.getValueAt(rowIndex, 0);
+                    type = (String) table.getValueAt(rowIndex, 1);
+                    if (colIndex == 0) {
                         type = "*";
-                    } else if(colIndex ==1){
+                    } else if (colIndex == 1) {
                         subject = "*";
                     }
 
                     if (!currentSubject.equals(subject) || !currentType.equals(type)) {
-                        if((JOptionPane.showConfirmDialog(me,
-                                "Show messages ? \n\nsubject =  "+subject+"\ntype      =  "+type+"\n",
+                        if ((JOptionPane.showConfirmDialog(me,
+                                "Show messages ? \n\nsubject =  " + subject + "\ntype      =  " + type + "\n",
                                 "Message Selection",
-                                JOptionPane.OK_CANCEL_OPTION)==JOptionPane.YES_OPTION)){
+                                JOptionPane.OK_CANCEL_OPTION) == JOptionPane.YES_OPTION)) {
                             currentSubject = subject;
-                            currentType    = type;
+                            currentType = type;
                             otherMsgTF.clearTable();
                             selectMsgScrollPane.setViewportView(otherMsgT);
                             createOT = true;
@@ -1291,7 +1330,7 @@ public class cMbUILite extends JFrame {
 
                             // subscribe to the selected subject and type
                             try {
-                                if(selectedMsgSubscription !=null) {
+                                if (selectedMsgSubscription != null) {
                                     myPlatformConnection.unsubscribe(selectedMsgSubscription);
                                 }
                                 selectedMsgSubscription = myPlatformConnection.subscribe(currentSubject,
@@ -1312,7 +1351,6 @@ public class cMbUILite extends JFrame {
     private class SeverityInfoFilterAction extends AbstractAction {
         private SeverityInfoFilterAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Info");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -1326,7 +1364,6 @@ public class cMbUILite extends JFrame {
     private class SeverityWarningFilterAction extends AbstractAction {
         private SeverityWarningFilterAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Warning");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -1340,7 +1377,6 @@ public class cMbUILite extends JFrame {
     private class SeveritErrorFilterAction extends AbstractAction {
         private SeveritErrorFilterAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Error      ");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -1354,7 +1390,6 @@ public class cMbUILite extends JFrame {
     private class SeveritySevereFilterAction extends AbstractAction {
         private SeveritySevereFilterAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Severe   ");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -1368,7 +1403,6 @@ public class cMbUILite extends JFrame {
     private class SetMsgQueSize extends AbstractAction {
         private SetMsgQueSize() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Set Size");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -1377,9 +1411,9 @@ public class cMbUILite extends JFrame {
             String s = JOptionPane.showInputDialog("Enter message queue size", queSize);
             try {
                 queSize = Integer.parseInt(s);
-                JOptionPane.showMessageDialog(me,"Message queue size is changed to be = "+queSize);
+                JOptionPane.showMessageDialog(me, "Message queue size is changed to be = " + queSize);
             } catch (NumberFormatException e1) {
-                JOptionPane.showMessageDialog(me,"Wrong integer. Message queue size = "+queSize);
+                JOptionPane.showMessageDialog(me, "Wrong integer. Message queue size = " + queSize);
             }
         }
     }
@@ -1387,15 +1421,14 @@ public class cMbUILite extends JFrame {
     private class ClearMsgQue extends AbstractAction {
         private ClearMsgQue() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Reset");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
         public void actionPerformed(ActionEvent e) {
-            if(!selectMessageQueue.isEmpty()){
-                if((JOptionPane.showConfirmDialog(me,"Are you sure ?","Confirmation",
-                        JOptionPane.OK_CANCEL_OPTION)==JOptionPane.YES_OPTION)){
+            if (!selectMessageQueue.isEmpty()) {
+                if ((JOptionPane.showConfirmDialog(me, "Are you sure ?", "Confirmation",
+                        JOptionPane.OK_CANCEL_OPTION) == JOptionPane.YES_OPTION)) {
                     selectMessageQueue.clear();
                 }
             }
@@ -1405,14 +1438,13 @@ public class cMbUILite extends JFrame {
     private class ClearTableAction extends AbstractAction {
         private ClearTableAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Selection Table");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
         public void actionPerformed(ActionEvent e) {
-            if((JOptionPane.showConfirmDialog(me,"Are you sure ?","Confirmation",
-                    JOptionPane.OK_CANCEL_OPTION)==JOptionPane.YES_OPTION)){
+            if ((JOptionPane.showConfirmDialog(me, "Are you sure ?", "Confirmation",
+                    JOptionPane.OK_CANCEL_OPTION) == JOptionPane.YES_OPTION)) {
                 otherMsgTF.clearTable();
             }
         }
@@ -1422,7 +1454,6 @@ public class cMbUILite extends JFrame {
     private class EnableMessageSelection extends AbstractAction {
         private EnableMessageSelection() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Enable msg selection");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -1435,7 +1466,6 @@ public class cMbUILite extends JFrame {
     private class DisableMsgSelectionAction extends AbstractAction {
         private DisableMsgSelectionAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Disable msg selection");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -1448,14 +1478,13 @@ public class cMbUILite extends JFrame {
     private class ClearDalogTableAction extends AbstractAction {
         private ClearDalogTableAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "daLog Table");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
         public void actionPerformed(ActionEvent e) {
-            if((JOptionPane.showConfirmDialog(me,"Are you sure ?","Confirmation",
-                    JOptionPane.OK_CANCEL_OPTION)==JOptionPane.YES_OPTION)){
+            if ((JOptionPane.showConfirmDialog(me, "Are you sure ?", "Confirmation",
+                    JOptionPane.OK_CANCEL_OPTION) == JOptionPane.YES_OPTION)) {
                 dalogMsgTF.clearTable();
             }
         }
@@ -1464,15 +1493,14 @@ public class cMbUILite extends JFrame {
     private class ClearDalogMsgQueue extends AbstractAction {
         private ClearDalogMsgQueue() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Reset");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
         public void actionPerformed(ActionEvent e) {
-            if(!selectMessageQueue.isEmpty()){
-                if((JOptionPane.showConfirmDialog(me,"Are you sure ?","Confirmation",
-                        JOptionPane.OK_CANCEL_OPTION)==JOptionPane.YES_OPTION)){
+            if (!selectMessageQueue.isEmpty()) {
+                if ((JOptionPane.showConfirmDialog(me, "Are you sure ?", "Confirmation",
+                        JOptionPane.OK_CANCEL_OPTION) == JOptionPane.YES_OPTION)) {
                     dalogMessageQueue.clear();
                 }
             }
@@ -1482,7 +1510,6 @@ public class cMbUILite extends JFrame {
     private class SetDalogMsgQueueSize extends AbstractAction {
         private SetDalogMsgQueueSize() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Set Size");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
@@ -1491,9 +1518,9 @@ public class cMbUILite extends JFrame {
             String s = JOptionPane.showInputDialog("Enter daLog message queue size", dalogMsgQueSize);
             try {
                 dalogMsgQueSize = Integer.parseInt(s);
-                JOptionPane.showMessageDialog(me,"daLog message queue size is changed to be = "+dalogMsgQueSize);
+                JOptionPane.showMessageDialog(me, "daLog message queue size is changed to be = " + dalogMsgQueSize);
             } catch (NumberFormatException e1) {
-                JOptionPane.showMessageDialog(me,"Wrong integer. daLog message queue size = "+dalogMsgQueSize);
+                JOptionPane.showMessageDialog(me, "Wrong integer. daLog message queue size = " + dalogMsgQueSize);
             }
         }
     }
@@ -1501,14 +1528,13 @@ public class cMbUILite extends JFrame {
     private class CodaClassFilter extends AbstractAction {
         private CodaClassFilter() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Coda Component Type");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
         public void actionPerformed(ActionEvent e) {
-            String s = JOptionPane.showInputDialog("Enter type of the Coda component", codaClass);
-            if (s!=null && !s.equals("") && !s.trim().contains(" ")) {
+            String s = JOptionPane.showInputDialog("Enter the type of the Coda component", codaClass);
+            if (s != null && !s.equals("") && !s.trim().contains(" ")) {
                 codaClass = s;
             } else {
                 codaClass = null;
@@ -1520,14 +1546,13 @@ public class cMbUILite extends JFrame {
     private class MessageAuthorFilter extends AbstractAction {
         private MessageAuthorFilter() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Message Author");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
         public void actionPerformed(ActionEvent e) {
-            String s = JOptionPane.showInputDialog("Enter type of the Coda component", sender);
-            if (s!=null && !s.equals("") && !s.trim().contains(" ")) {
+            String s = JOptionPane.showInputDialog("Enter the name of the Coda component", sender);
+            if (s != null && !s.equals("") && !s.trim().contains(" ")) {
                 sender = s;
             } else {
                 sender = null;
@@ -1539,7 +1564,6 @@ public class cMbUILite extends JFrame {
     private class StopUpdateSelection extends AbstractAction {
         private StopUpdateSelection() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Stop Selection ");
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.SHIFT_MASK));
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -1553,9 +1577,8 @@ public class cMbUILite extends JFrame {
     private class ResumeSelectionUpdate extends AbstractAction {
         private ResumeSelectionUpdate() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Resume Selection");
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK));
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK));
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
@@ -1567,7 +1590,6 @@ public class cMbUILite extends JFrame {
     private class StopDalogUpdate extends AbstractAction {
         private StopDalogUpdate() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Stop daLog");
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.SHIFT_MASK));
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -1581,9 +1603,8 @@ public class cMbUILite extends JFrame {
     private class ResumeDalogUpdate extends AbstractAction {
         private ResumeDalogUpdate() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Resume daLog");
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK));
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK));
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
