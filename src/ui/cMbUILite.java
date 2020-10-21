@@ -813,9 +813,11 @@ public class cMbUILite extends JFrame {
                 // create a dir = codaClass if it does not exists
                 File dir = new File(dirName);
                 if (!dir.exists()) dir.mkdirs();
-                BufferedWriter writer = new BufferedWriter(new FileWriter(dirName+File.separator+sender, true));
+                BufferedWriter writer = new BufferedWriter(new FileWriter(dirName + File.separator
+                        + severity.toLowerCase() + File.separator
+                        + sender + ".cmb", true));
                 writer.write(LocalDateTime.now().format(dateFormat));
-                writer.write(msg.toString(false,true,true));
+                writer.write(msg.toString(false, true, true));
                 writer.close();
             }
         } catch (cMsgException | IOException e) {
