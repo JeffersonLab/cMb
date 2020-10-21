@@ -671,7 +671,7 @@
             </object>
             <void method="setProperty">
              <string>text</string>
-             <string>Message Filter</string>
+             <string>Message Filter and Archive</string>
             </void>
             <void property="name">
              <string>dalogfiltermenu</string>

@@ -450,7 +450,7 @@ public class cMbUILite extends JFrame {
 
                 //======== dalogfiltermenu ========
                 {
-                    dalogfiltermenu.setText("Message Filter");
+                    dalogfiltermenu.setText("Message Filter and Archive");
 
                     //======== severityfiltermenu ========
                     {
@@ -650,52 +650,52 @@ public class cMbUILite extends JFrame {
             GroupLayout panel1Layout = new GroupLayout(panel1);
             panel1.setLayout(panel1Layout);
             panel1Layout.setHorizontalGroup(
-                    panel1Layout.createParallelGroup()
-                            .addComponent(toolBar3, GroupLayout.DEFAULT_SIZE, 800, Short.MAX_VALUE)
+                panel1Layout.createParallelGroup()
+                    .addComponent(toolBar3, GroupLayout.DEFAULT_SIZE, 800, Short.MAX_VALUE)
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(panel1Layout.createParallelGroup()
                             .addGroup(panel1Layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addGroup(panel1Layout.createParallelGroup()
-                                            .addGroup(panel1Layout.createSequentialGroup()
-                                                    .addComponent(label1)
-                                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(currentSubjectTextField, GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
-                                                    .addGap(48, 48, 48)
-                                                    .addComponent(label2)
-                                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(currentTypeTextField, GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
-                                            .addComponent(tabbedPane1, GroupLayout.DEFAULT_SIZE, 788, Short.MAX_VALUE))
-                                    .addContainerGap())
+                                .addComponent(label1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(currentSubjectTextField, GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
+                                .addGap(48, 48, 48)
+                                .addComponent(label2)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(currentTypeTextField, GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
+                            .addComponent(tabbedPane1, GroupLayout.DEFAULT_SIZE, 788, Short.MAX_VALUE))
+                        .addContainerGap())
             );
             panel1Layout.setVerticalGroup(
-                    panel1Layout.createParallelGroup()
-                            .addGroup(panel1Layout.createSequentialGroup()
-                                    .addComponent(toolBar3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addGroup(panel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                            .addComponent(label1)
-                                            .addComponent(currentTypeTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(label2)
-                                            .addComponent(currentSubjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(tabbedPane1, GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
-                                    .addContainerGap())
+                panel1Layout.createParallelGroup()
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addComponent(toolBar3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(panel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                            .addComponent(label1)
+                            .addComponent(currentTypeTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(label2)
+                            .addComponent(currentSubjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tabbedPane1, GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                        .addContainerGap())
             );
         }
 
         GroupLayout contentPaneLayout = new GroupLayout(contentPane);
         contentPane.setLayout(contentPaneLayout);
         contentPaneLayout.setHorizontalGroup(
-                contentPaneLayout.createParallelGroup()
-                        .addGroup(contentPaneLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(panel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addContainerGap())
+            contentPaneLayout.createParallelGroup()
+                .addGroup(contentPaneLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(panel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap())
         );
         contentPaneLayout.setVerticalGroup(
-                contentPaneLayout.createParallelGroup()
-                        .addGroup(contentPaneLayout.createSequentialGroup()
-                                .addComponent(panel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addContainerGap())
+            contentPaneLayout.createParallelGroup()
+                .addGroup(contentPaneLayout.createSequentialGroup()
+                    .addComponent(panel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap())
         );
         pack();
         setLocationRelativeTo(getOwner());
@@ -1580,7 +1580,7 @@ public class cMbUILite extends JFrame {
         private ResumeSelectionUpdate() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
             putValue(NAME, "Resume Selection");
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK));
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK));
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
@@ -1606,7 +1606,7 @@ public class cMbUILite extends JFrame {
         private ResumeDalogUpdate() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
             putValue(NAME, "Resume daLog");
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK));
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK));
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
