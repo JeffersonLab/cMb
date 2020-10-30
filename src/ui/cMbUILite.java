@@ -68,7 +68,7 @@ public class cMbUILite extends JFrame {
 
     // filtering
     private List<String> MessageSeverityFilter = Collections.synchronizedList(new ArrayList<>());
-    private List<String> sender = new ArrayList<>();
+    private List<String> senderList = new ArrayList<>();
     private String codaClass = null;
 
     private boolean _selectionOn = false;
@@ -744,14 +744,14 @@ public class cMbUILite extends JFrame {
      */
     private boolean filterMessage(cMsgMessage msg,
                                   java.util.List<String> sevList,
-                                  List<String> _sender,
+                                  List<String> _senderList,
                                   String _codaClass) {
         boolean b = false;
         if (sevList.isEmpty()) return true;
-        if (_sender.isEmpty()) return true;
+        if (_senderList.isEmpty()) return true;
         try {
 
-            // sender
+            // senderList
             String sender = "undefined";
                 sender = msg.getSender();
 
@@ -768,7 +768,7 @@ public class cMbUILite extends JFrame {
                 b = true;
             } else {
                 if ((severity.equals("undefined") || sevList.contains(severity)) &&
-                        (sender.equals("undefined") || _sender.contains(sender)) &&
+                        (sender.equals("undefined") || _senderList.contains(sender)) &&
                         (codaClass.equals("undefined") || codaClass.equals(_codaClass))
                 ) {
                     b = true;
@@ -789,12 +789,12 @@ public class cMbUILite extends JFrame {
      */
     private void archive(cMsgMessage msg,
                          java.util.List<String> sevList,
-                         List<String> _sender) {
+                         List<String> _senderList) {
         if (sevList.isEmpty()) return;
-        if (_sender.isEmpty()) return;
+        if (_senderList.isEmpty()) return;
         try {
 
-            // sender
+            // senderList
             String sender = "undefined";
                 sender = msg.getSender();
 
@@ -807,7 +807,7 @@ public class cMbUILite extends JFrame {
             if (msg.getPayloadItem("severity") != null) severity = msg.getPayloadItem("severity").getString();
 
 
-            if (sevList.contains(severity) && _sender.contains(sender) && !archiveDir.equals("undefined")) {
+            if (sevList.contains(severity) && _senderList.contains(sender) && !archiveDir.equals("undefined")) {
                 String dirName = archiveDir + File.separator
                         + codaClass + File.separator
                         + severity.toLowerCase();
@@ -817,7 +817,7 @@ public class cMbUILite extends JFrame {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(dirName + File.separator
                         + sender + ".cmb", true));
                 writer.write(LocalDateTime.now().format(dateFormat)+"\n");
-                writer.write(msg.getText()+"\n");
+                writer.write(msg.getText()+"\n\n");
 //                writer.write(msg.toString(false, true, true));
                 writer.close();
             }
@@ -853,20 +853,17 @@ public class cMbUILite extends JFrame {
         dalogMsgTF.clearTable();
         // filter select messages
         for (cMsgMessage msg : selectMessageQueue) {
-            if (filterMessage(msg, MessageSeverityFilter, sender, codaClass)) {
+            if (filterMessage(msg, MessageSeverityFilter, senderList, codaClass)) {
                 showOtherMsg(otherTColumnNames, msg);
             }
         }
 
         // filter dalog messages
         for (cMsgMessage msg : dalogMessageQueue) {
-            if (filterMessage(msg, MessageSeverityFilter, sender, codaClass)) {
+            if (filterMessage(msg, MessageSeverityFilter, senderList, codaClass)) {
                 showDalogMsg(msg);
             }
         }
-        // reset filters
-//        sender = null;
-//        codaClass = null;
     }
 
     private void showOtherMsg(ArrayList<String> titles, cMsgMessage msg) {
@@ -1142,7 +1139,7 @@ public class cMbUILite extends JFrame {
             }
             if (isSelectionUpdate) {
                 if (isUpdateActive.get()) {
-                    if (filterMessage(msg, MessageSeverityFilter, sender, codaClass)) {
+                    if (filterMessage(msg, MessageSeverityFilter, senderList, codaClass)) {
                         showOtherMsg(otherTColumnNames, msg);
                     }
 
@@ -1168,7 +1165,7 @@ public class cMbUILite extends JFrame {
             if (isSelectionUpdate) {
                 if (isDalogUpdate) {
                     if (isUpdateActive.get()) {
-                        if (filterMessage(msg, MessageSeverityFilter, sender, codaClass)) {
+                        if (filterMessage(msg, MessageSeverityFilter, senderList, codaClass)) {
                             showDalogMsg(msg);
                         }
                     }
@@ -1181,7 +1178,7 @@ public class cMbUILite extends JFrame {
                 }
 
                 // archive filtered data
-                archive(msg, MessageSeverityFilter, sender);
+                archive(msg, MessageSeverityFilter, senderList);
 
             }
         }
@@ -1251,8 +1248,8 @@ public class cMbUILite extends JFrame {
                         "\nUser selected type     = " + currentType +
                         "\nUpdating                   = " + isUpdateActive.get() +
                         "\n\nSelect: \n" + MessageSeverityFilter +
-                        "\nCoda type                 = " + cs +
-                        "\nMessage author        = " + sender
+//                        "\nCoda type                 = " + cs +
+                        "\nMessage author        = " + senderList
                 );
             } else {
                 JOptionPane.showMessageDialog(me, "Disconnected.", "Status", JOptionPane.INFORMATION_MESSAGE);
@@ -1552,11 +1549,11 @@ public class cMbUILite extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String s = JOptionPane.showInputDialog("Enter the name of the Coda component", sender);
+            String s = JOptionPane.showInputDialog("Enter the name of the Coda component", senderList);
             if (s != null && !s.equals("") && !s.trim().contains(" ")) {
-                sender.add(s);
+                senderList.add(s);
             } else {
-                sender = null;
+                senderList = null;
             }
             filterMessageQueue();
         }
