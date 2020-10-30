@@ -8,6 +8,7 @@ import java.awt.event.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.*;
@@ -66,8 +67,8 @@ public class cMbUILite extends JFrame {
     private String archiveDir = "undefined";
 
     // filtering
-    private java.util.List<String> MessageSeverityFilter = Collections.synchronizedList(new ArrayList<>());
-    private String sender = null;
+    private List<String> MessageSeverityFilter = Collections.synchronizedList(new ArrayList<>());
+    private List<String> sender = new ArrayList<>();
     private String codaClass = null;
 
     private boolean _selectionOn = false;
@@ -743,17 +744,16 @@ public class cMbUILite extends JFrame {
      */
     private boolean filterMessage(cMsgMessage msg,
                                   java.util.List<String> sevList,
-                                  String _sender,
+                                  List<String> _sender,
                                   String _codaClass) {
         boolean b = false;
         if (sevList.isEmpty()) return true;
+        if (_sender.isEmpty()) return true;
         try {
 
             // sender
             String sender = "undefined";
-            if (_sender != null) {
                 sender = msg.getSender();
-            }
 
             // codaclass
             String codaClass = "undefined";
@@ -768,7 +768,7 @@ public class cMbUILite extends JFrame {
                 b = true;
             } else {
                 if ((severity.equals("undefined") || sevList.contains(severity)) &&
-                        (sender.equals("undefined") || sender.equals(_sender)) &&
+                        (sender.equals("undefined") || _sender.contains(sender)) &&
                         (codaClass.equals("undefined") || codaClass.equals(_codaClass))
                 ) {
                     b = true;
@@ -789,15 +789,14 @@ public class cMbUILite extends JFrame {
      */
     private void archive(cMsgMessage msg,
                          java.util.List<String> sevList,
-                         String _sender) {
+                         List<String> _sender) {
         if (sevList.isEmpty()) return;
+        if (_sender.isEmpty()) return;
         try {
 
             // sender
             String sender = "undefined";
-            if (_sender != null) {
                 sender = msg.getSender();
-            }
 
             // codaclass
             String codaClass = "undefined";
@@ -808,7 +807,7 @@ public class cMbUILite extends JFrame {
             if (msg.getPayloadItem("severity") != null) severity = msg.getPayloadItem("severity").getString();
 
 
-            if (sevList.contains(severity) && sender.equals(_sender) && !archiveDir.equals("undefined")) {
+            if (sevList.contains(severity) && _sender.contains(sender) && !archiveDir.equals("undefined")) {
                 String dirName = archiveDir + File.separator
                         + codaClass + File.separator
                         + severity.toLowerCase();
@@ -1244,9 +1243,7 @@ public class cMbUILite extends JFrame {
             if (myPlatformConnection != null && myPlatformConnection.isConnected()) {
 
                 String cs = "undefined";
-                String ma = "undefined";
                 if (codaClass != null) cs = codaClass;
-                if (sender != null) ma = sender;
                 JOptionPane.showMessageDialog(me, "Connected to: \n" + plUdl +
                         "\n\nShowing messages: " +
                         "\nUser selected subject = " + currentSubject +
@@ -1254,7 +1251,7 @@ public class cMbUILite extends JFrame {
                         "\nUpdating                   = " + isUpdateActive.get() +
                         "\n\nSelect: \n" + MessageSeverityFilter +
                         "\nCoda type                 = " + cs +
-                        "\nMessage author        = " + ma
+                        "\nMessage author        = " + sender
                 );
             } else {
                 JOptionPane.showMessageDialog(me, "Disconnected.", "Status", JOptionPane.INFORMATION_MESSAGE);
@@ -1556,7 +1553,7 @@ public class cMbUILite extends JFrame {
         public void actionPerformed(ActionEvent e) {
             String s = JOptionPane.showInputDialog("Enter the name of the Coda component", sender);
             if (s != null && !s.equals("") && !s.trim().contains(" ")) {
-                sender = s;
+                sender.add(s);
             } else {
                 sender = null;
             }
