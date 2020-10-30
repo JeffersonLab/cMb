@@ -1159,7 +1159,7 @@
        <string>location</string>
        <object class="java.awt.Point">
         <int>0</int>
-        <int>0</int>
+        <int>5</int>
        </object>
       </void>
       <void method="setProperty">

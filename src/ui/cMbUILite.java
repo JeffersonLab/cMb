@@ -373,7 +373,7 @@ public class cMbUILite extends JFrame {
         action24 = new ResumeDalogUpdate();
 
         //======== this ========
-        var contentPane = getContentPane();
+        Container contentPane = getContentPane();
 
         //======== menuBar1 ========
         {
