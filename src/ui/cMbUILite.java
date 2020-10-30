@@ -816,8 +816,8 @@ public class cMbUILite extends JFrame {
                 if (!dir.exists()) dir.mkdirs();
                 BufferedWriter writer = new BufferedWriter(new FileWriter(dirName + File.separator
                         + sender + ".cmb", true));
-                writer.write(LocalDateTime.now().format(dateFormat)+"\\");
-                writer.write(msg.getText());
+                writer.write(LocalDateTime.now().format(dateFormat)+"\n");
+                writer.write(msg.getText()+"\n");
 //                writer.write(msg.toString(false, true, true));
                 writer.close();
             }
